@@ -3,54 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Email Verification</title>
+  <title>Verify Your Email</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f4f9;
+      font-family: Arial, sans-serif;
+      background-color: #f2f6fc;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
     }
-    .card {
-      background-color: white;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+
+    .verify-box {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 10px;
       text-align: center;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
       max-width: 400px;
+      width: 100%;
     }
-    h2 {
+
+    .verify-box h1 {
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+
+    .verify-box p {
+      font-size: 16px;
       color: #333;
+      margin-bottom: 10px;
     }
-    p {
-      color: #555;
-      margin-top: 10px;
+
+    .verify-box .small {
+      font-size: 14px;
+      color: #777;
     }
-    .spinner {
+
+    .loading {
       margin-top: 20px;
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #007bff;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Please verify your email</h2>
-    <p>We’ve sent a verification email. Once verified, this page will automatically redirect.</p>
-    <div class="spinner"></div>
+  <div class="verify-box">
+    <h1>Verify Your Email</h1>
+    <p>A verification link has been sent to your email.</p>
+    <p class="small">Make sure to check your <strong>spam</strong> or junk folder too.</p>
+    <p class="small">This page will automatically continue once you verify your email.</p>
+
+    <div class="loading">
+      <span>⏳ Waiting for verification...</span>
+    </div>
   </div>
 
   <script type="module">
@@ -70,24 +75,17 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    function checkVerification(user) {
-      user.reload().then(() => {
-        if (user.emailVerified) {
-          localStorage.setItem("accset", "true");
-          window.location.href = "https://robomates.github.io";
-        } else {
-          console.log("Email not verified yet...");
-        }
-      });
-    }
-
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        checkVerification(user);
-        // Re-check every 3 seconds
-        setInterval(() => checkVerification(user), 3000);
-      } else {
-        console.log("No user signed in.");
+        const checkVerified = setInterval(() => {
+          user.reload().then(() => {
+            if (user.emailVerified) {
+              localStorage.setItem("accset", "true");
+              clearInterval(checkVerified);
+              window.location.href = "https://robomates.github.io";
+            }
+          });
+        }, 3000);
       }
     });
   </script>
